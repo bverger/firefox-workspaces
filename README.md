@@ -1,4 +1,4 @@
-# Workspaces (extensión para Firefox)
+# Sidespace (extensión para Firefox)
 
 Pestañas verticales en la barra lateral, con workspaces al estilo Arc/Dia.
 

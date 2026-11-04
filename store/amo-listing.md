@@ -4,7 +4,7 @@ Textos para copiar en el formulario de AMO al publicar la primera versión *list
 
 ## Nombre
 
-Workspaces — Vertical Tabs & Spaces
+Sidespace
 
 ## Resumen (máx. 250 caracteres)
 
@@ -14,7 +14,7 @@ Workspaces — Vertical Tabs & Spaces
 
 ## Descripción (en-US)
 
-Workspaces turns the sidebar into your tab list, organised the way modern sidebar browsers do it:
+Sidespace turns the sidebar into your tab list, organised the way modern sidebar browsers do it:
 
 - **Workspaces** (Personal, Work, …): each window shows only the tabs of the current workspace. Switch with a click, a two-finger swipe on the sidebar, or Ctrl+1…5.
 - **Favorites**: an icon grid at the top of each workspace.
@@ -30,7 +30,7 @@ The interface is in Spanish for now.
 
 ## Descripción (es)
 
-Workspaces convierte la barra lateral en tu lista de pestañas:
+Sidespace convierte la barra lateral en tu lista de pestañas:
 
 - **Workspaces** (Personal, Work…): cada ventana muestra solo las pestañas del workspace actual. Cambia con un clic, deslizando con dos dedos sobre la barra lateral o con Ctrl+1…5.
 - **Favoritos**: cuadrícula de iconos arriba de cada workspace.
