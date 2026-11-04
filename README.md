@@ -41,20 +41,20 @@ La extensión se queda cargada hasta que cierres Firefox. Para ver los cambios d
 
 La extensión se publica en addons.mozilla.org (*listed*). Se instala desde su página de la tienda y Firefox la actualiza solo. En cada PC con tu cuenta de Firefox (y *Complementos* activado en la sincronización), Firefox Sync la instala sin hacer nada.
 
-**Publicar una versión nueva.** Una vez, en https://addons.mozilla.org/developers/ → *Tools → Manage API Keys*, genera unas claves y guárdalas en tu shell (por ejemplo, en `~/.zshrc`):
+**Publicar una versión nueva.** La publica GitHub Actions ([.github/workflows/publish.yml](.github/workflows/publish.yml)) cuando se sube una etiqueta `vX.Y.Z`. Una vez, guarda las claves de AMO (*Tools → Manage API Keys*) como *secrets* del repositorio:
 
 ```bash
-export WEB_EXT_API_KEY=...
-export WEB_EXT_API_SECRET=...
+gh secret set WEB_EXT_API_KEY --repo bverger/firefox-workspaces
+gh secret set WEB_EXT_API_SECRET --repo bverger/firefox-workspaces
 ```
 
-Después, con los cambios ya commiteados:
+(cada comando te pide el valor y lo guarda cifrado en GitHub). Después, con los cambios ya commiteados:
 
 ```bash
 ./tools/release.sh          # sube la versión (patch; usa minor o major para saltos mayores)
 ```
 
-El script sube la versión en `manifest.json`, la envía a revisión en AMO, hace commit, crea la etiqueta `vX.Y.Z` y lo sube a GitHub. Cuando Mozilla la aprueba, Firefox la instala en tus PCs en menos de un día; para no esperar: `about:addons` → ⚙️ → *Buscar actualizaciones*.
+El script sube la versión en `manifest.json`, pasa el lint, hace commit, crea la etiqueta y lo sube a GitHub; el workflow comprueba que la etiqueta coincide con el manifest y envía la versión a revisión en AMO. Cuando Mozilla la aprueba, Firefox la instala en tus PCs en menos de un día; para no esperar: `about:addons` → ⚙️ → *Buscar actualizaciones*.
 
 Los textos de la ficha de la tienda están en [store/amo-listing.md](store/amo-listing.md).
 

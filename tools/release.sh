@@ -1,16 +1,14 @@
 #!/bin/sh
-# Releases a new version on addons.mozilla.org: bumps the version, submits it
-# to the listed channel and tags it in git. After Mozilla's review, Firefox
-# updates every installed copy by itself.
+# Releases a new version: bumps the version in manifest.json, commits, tags
+# and pushes. Pushing the vX.Y.Z tag makes GitHub Actions
+# (.github/workflows/publish.yml) submit it to addons.mozilla.org; after
+# Mozilla's review, Firefox updates every installed copy by itself.
 #
 # Usage: tools/release.sh [patch|minor|major]   (default: patch)
-# Needs WEB_EXT_API_KEY and WEB_EXT_API_SECRET in the environment
-# (addons.mozilla.org → Tools → Manage API Keys).
 set -eu
 cd "$(dirname "$0")/.."
 
-: "${WEB_EXT_API_KEY:?Set WEB_EXT_API_KEY (AMO → Tools → Manage API Keys)}"
-: "${WEB_EXT_API_SECRET:?Set WEB_EXT_API_SECRET (AMO → Tools → Manage API Keys)}"
+REPO=bverger/firefox-workspaces
 
 if [ -n "$(git status --porcelain)" ]; then
   echo "Commit or stash your changes first." >&2
@@ -35,14 +33,14 @@ EOF
 )
 echo "Releasing $version"
 
-npx --yes web-ext@latest lint
-rm -rf dist
-# Listed versions go through Mozilla's review; this returns once submitted.
-npx --yes web-ext@latest sign --channel=listed --artifacts-dir dist
+# Fail here rather than in CI.
+npx --yes web-ext@10.8.0 lint
 
 git add manifest.json
 git commit -m "Release $version"
 git tag "v$version"
 git push origin HEAD "v$version"
 
-echo "Submitted $version. Follow the review at https://addons.mozilla.org/developers/addons"
+echo "Pushed v$version. GitHub Actions submits it to AMO:"
+echo "  https://github.com/$REPO/actions"
+echo "Then follow the review at https://addons.mozilla.org/developers/addons"
