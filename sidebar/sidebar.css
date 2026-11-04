@@ -42,7 +42,7 @@ body {
 
 button { font: inherit; color: inherit; cursor: pointer; }
 
-header { display: flex; align-items: flex-start; gap: 4px; padding: 8px 8px 4px; }
+header { display: flex; align-items: center; gap: 4px; padding: 8px 8px 4px; container: header / inline-size; }
 
 #spaces { flex: 1; min-width: 0; }
 
@@ -63,7 +63,14 @@ header { display: flex; align-items: flex-start; gap: 4px; padding: 8px 8px 4px;
 #autohide[aria-pressed="true"] { background: var(--selected); border-color: var(--border); color: var(--accent); }
 #autohide[aria-pressed="true"] .arrow { transform: rotate(180deg); transform-origin: 9.5px 8px; }
 
-#spaces { display: flex; flex-wrap: wrap; gap: 4px; }
+/* One row that scrolls sideways if needed; never wraps under the button. */
+#spaces { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+
+/* Narrow sidebar: only the active workspace keeps its name. */
+@container header (max-width: 360px) {
+  .space:not(.active, .add) .name { display: none; }
+  .space:not(.active, .add) { padding: 4px 7px; }
+}
 
 .space {
   display: flex;
@@ -81,6 +88,8 @@ header { display: flex; align-items: flex-start; gap: 4px; padding: 8px 8px 4px;
 .space.drop { outline: 2px dashed var(--c); }
 .space .dot, .tab .dot { width: 8px; height: 8px; flex: none; border-radius: 50%; background: var(--c); }
 .space .name { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.space { flex: none; }
+.space.active { flex: 0 1 auto; min-width: 0; }
 .space.add { padding: 4px 8px; }
 
 #editor {
@@ -338,6 +347,10 @@ footer select {
 }
 .tab .close { visibility: hidden; font-size: 16px; }
 .tab:hover .close, .tab.active .close { visibility: visible; }
+.tab .mute { display: grid; place-items: center; visibility: hidden; }
+.tab .mute svg { width: 14px; height: 14px; }
+.tab:hover .mute, .tab .mute.on { visibility: visible; }
+.tab .mute.on:not(.muted) { color: var(--accent); }
 .tab button:hover { background: var(--hover); color: var(--fg); }
 
 .icon { width: 16px; height: 16px; flex: none; }
@@ -354,3 +367,24 @@ footer select {
   text-align: left;
 }
 #new-tab:hover { background: var(--hover); color: var(--fg); }
+
+.menu {
+  position: fixed;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  min-width: 160px;
+  padding: 4px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+}
+.menu button {
+  padding: 6px 10px;
+  border: none;
+  border-radius: 5px;
+  background: none;
+  text-align: left;
+}
+.menu button:hover { background: var(--hover); }

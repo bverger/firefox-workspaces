@@ -22,6 +22,45 @@ const classes = (...names) => names.filter(Boolean).join(' ');
 // The first icon given, else the cached favicon of the URL's site.
 const iconFor = (url, ...icons) => icons.find(Boolean) || state?.icons?.[WS.hostOf(url)];
 
+// Speaker icon: with sound waves, or crossed out when muted.
+function speakerIcon(muted) {
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('viewBox', '0 0 16 16');
+  svg.setAttribute('aria-hidden', 'true');
+  const paths = [
+    ['M2.5 6h2.5l3.5-3v10l-3.5-3h-2.5z', 'currentColor', 'none'],
+    ...(muted
+      ? [['M11 6l4 4M15 6l-4 4', 'none', 'currentColor']]
+      : [['M11 5.5a3.5 3.5 0 0 1 0 5M12.8 3.5a6 6 0 0 1 0 9', 'none', 'currentColor']]),
+  ];
+  for (const [d, fill, stroke] of paths) {
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    path.setAttribute('d', d);
+    path.setAttribute('fill', fill);
+    path.setAttribute('stroke', stroke);
+    path.setAttribute('stroke-width', '1.3');
+    path.setAttribute('stroke-linecap', 'round');
+    path.setAttribute('stroke-linejoin', 'round');
+    svg.append(path);
+  }
+  return svg;
+}
+
+// Mute toggle for an open tab: always shown while it plays sound or is muted,
+// otherwise only on hover.
+function muteButton(tab) {
+  const muted = Boolean(tab.mutedInfo?.muted);
+  const button = el('button', {
+    className: classes('mute', (tab.audible || muted) && 'on', muted && 'muted'),
+    title: muted ? 'Activar sonido' : 'Silenciar pestaña',
+  }, speakerIcon(muted));
+  button.onclick = (e) => {
+    e.stopPropagation();
+    browser.tabs.update(tab.id, { muted: !muted });
+  };
+  return button;
+}
+
 function favicon(src) {
   const ok = src && !src.startsWith('chrome://');
   const img = el('img', { className: 'icon', src: ok ? src : DEFAULT_ICON, alt: '' });
@@ -304,38 +343,73 @@ async function toggleFolder(id) {
   await browser.storage.local.set({ collapsed });
 }
 
-function itemRow(ws, folder, item, index, tab, removeTitle = 'Quitar de la carpeta') {
+function itemRow(ws, folder, item, index, tab, removeLabel = 'Quitar de la carpeta') {
   const row = el('li', {
     className: classes('tab', 'item', !tab && 'closed', tab?.active && 'active'),
     title: `${tab?.title || item.title}\n${tab?.url || item.url}`,
   }, favicon(iconFor(item.url, tab?.favIconUrl, item.icon)), el('span', { className: 'title', textContent: tab?.title || item.title || item.url }));
 
   if (tab) {
-    const close = el('button', { className: 'close', textContent: '×', title: 'Cerrar (se queda guardada)' });
+    // Navigated away from the saved URL: go back to it, like Arc.
+    if (tab.url !== item.url) {
+      const back = el('button', { className: 'close', textContent: '↩', title: `Volver a ${item.url}` });
+      back.onclick = (e) => {
+        e.stopPropagation();
+        browser.tabs.update(tab.id, { url: item.url, active: true });
+      };
+      row.append(back);
+    }
+    row.append(muteButton(tab));
+    // Like Arc's "−" on pinned tabs: closes the tab and keeps the saved item,
+    // which reopens at its saved URL. Unpinning is in the right-click menu.
+    const close = el('button', { className: 'close', textContent: '−', title: 'Cerrar (se queda guardada)' });
     close.onclick = (e) => {
       e.stopPropagation();
       browser.tabs.remove(tab.id);
     };
     row.append(close);
   }
-  const remove = el('button', { className: 'close', textContent: '−', title: removeTitle });
-  remove.onclick = (e) => {
-    e.stopPropagation();
-    act(WS.removeItem(item.id));
-  };
-  row.append(remove);
 
   row.onclick = () => act(WS.openItem(windowId, ws.id, item));
   middleClick(row, () => tab && browser.tabs.remove(tab.id));
   row.oncontextmenu = (e) => {
-    if (tab) browser.menus.overrideContext({ context: 'tab', tabId: tab.id });
-    else e.preventDefault();
+    if (tab) return browser.menus.overrideContext({ context: 'tab', tabId: tab.id });
+    e.preventDefault();
+    showMenu(e, [
+      ['Abrir', () => act(WS.openItem(windowId, ws.id, item))],
+      [removeLabel, () => act(WS.removeItem(item.id))],
+    ]);
   };
   draggable(row, { itemId: item.id, item, tabId: tab?.id }, item.url);
   // Onto an item: before it, in the same folder.
   dropTarget(row, dropInto(folder.id, index), { hoverClass: 'over', accept: (d) => d.itemId !== item.id });
   return row;
 }
+
+// Small context menu for things without a native one (closed saved tabs).
+function showMenu(e, entries) {
+  closeMenu();
+  const menu = el('div', { className: 'menu' }, ...entries.map(([label, run]) => {
+    const button = el('button', { textContent: label });
+    button.onclick = () => {
+      closeMenu();
+      run();
+    };
+    return button;
+  }));
+  document.body.append(menu);
+  const { width, height } = menu.getBoundingClientRect();
+  menu.style.left = `${Math.min(e.clientX, window.innerWidth - width - 4)}px`;
+  menu.style.top = `${Math.min(e.clientY, window.innerHeight - height - 4)}px`;
+}
+
+const closeMenu = () => document.querySelector('.menu')?.remove();
+document.addEventListener('mousedown', (e) => {
+  if (!e.target.closest('.menu')) closeMenu();
+});
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closeMenu();
+});
 
 // --- Today --------------------------------------------------------------
 
@@ -431,15 +505,7 @@ function tabRow(tab, otherColor) {
   }
   row.append(favicon(iconFor(tab.url, tab.favIconUrl)), el('span', { className: 'title', textContent: tab.title || tab.url }));
 
-  if (tab.audible || tab.mutedInfo?.muted) {
-    const muted = tab.mutedInfo?.muted;
-    const audio = el('button', { textContent: muted ? '🔇' : '🔊', title: muted ? 'Activar sonido' : 'Silenciar' });
-    audio.onclick = (e) => {
-      e.stopPropagation();
-      browser.tabs.update(tab.id, { muted: !muted });
-    };
-    row.append(audio);
-  }
+  row.append(muteButton(tab));
   const close = el('button', { className: 'close', textContent: '×', title: 'Cerrar pestaña' });
   close.onclick = (e) => {
     e.stopPropagation();
