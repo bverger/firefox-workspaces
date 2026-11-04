@@ -1,0 +1,102 @@
+# Workspaces (extensión para Firefox)
+
+Pestañas verticales en la barra lateral, con workspaces al estilo Arc/Dia.
+
+- **Workspaces** (Personal, Work y los que quieras): al cambiar de uno a otro, se ocultan las pestañas de los demás, también en la barra de pestañas nativa. Todos comparten cookies y sesiones; es una agrupación visual.
+- **Cambiar de workspace**:
+  - clic en el workspace, arriba de la barra lateral;
+  - deslizar con dos dedos a izquierda o derecha sobre la barra lateral (o Shift + rueda del ratón);
+  - `Ctrl+1` … `Ctrl+5` en Mac (`Alt+1` … `Alt+5` en Windows/Linux).
+La barra lateral se organiza como en Arc, de arriba abajo:
+
+- **Favoritos**: cuadrícula de iconos. Arrastra una pestaña ahí, o usa clic derecho → *Añadir a favoritos del workspace*. Las pestañas fijadas de Firefox aparecen con borde discontinuo y se ven en todos los workspaces.
+- **Fijadas**: pestañas que se conservan. Arrastra una pestaña a esta zona, o usa clic derecho → *Fijar en el workspace*. Si cierras la pestaña, el elemento sigue ahí atenuado y al hacer clic se vuelve a abrir. El botón *−* la desfija. Si pasa el tiempo de archivado sin usarla, solo se descarga de memoria; no se cierra.
+- **Carpetas** (dentro de *Fijadas*, mezcladas con las pestañas como en Arc): crea una con *+ Carpeta*, o una subcarpeta con el *+* que aparece al pasar por encima de una carpeta. Doble clic o clic derecho para renombrarla, y clic para plegarla. Arrastra pestañas o carpetas dentro, o usa clic derecho → *Mover a carpeta*. Su contenido funciona igual que las fijadas. Borrar una carpeta borra también lo que contiene.
+- **Hoy**: pestañas temporales. Las que llevan un tiempo sin usarse se cierran solas y pasan a *Archivadas*. El tiempo se elige abajo del todo: 12 horas (por defecto, como Arc), 24 horas, 7 días, 30 días o nunca. *Limpiar* archiva ya todas las de Hoy del workspace. No se archivan la pestaña seleccionada ni las que están reproduciendo sonido. Si arrastras una fijada aquí, vuelve a ser temporal.
+- **Archivadas**: las últimas 100 pestañas archivadas. Haz clic en una para volver a abrirla. Este archivo es de cada PC y no se sincroniza.
+
+- **Buscador**: filtra las pestañas de todos los workspaces. Las de otros workspaces aparecen con un punto de color; al hacer clic en una, cambias a su workspace. Enter abre el primer resultado y Esc limpia la búsqueda.
+- **Gestión de pestañas**: arrastra para reordenar, suelta una pestaña sobre un workspace para moverla, clic central para cerrarla y clic derecho para abrir el menú nativo de la pestaña (incluye *Mover a workspace*).
+- **Editar un workspace**: doble clic o clic derecho sobre él para cambiar nombre y color, o para eliminarlo. Si lo eliminas, sus pestañas pasan al primer workspace.
+
+## Importar desde Arc
+
+```bash
+python3 tools/arc-export.py
+```
+
+Lee `~/Library/Application Support/Arc/StorableSidebar.json` y crea `arc-import.json` con tus espacios, pestañas fijadas, carpetas y subcarpetas (no las pestañas de Hoy). Después, en la barra lateral, pulsa *Importar…* abajo del todo y elige ese archivo. Cada espacio de Arc se une al workspace del mismo nombre, o se crea uno nuevo, con su emoji y su color. Si importas dos veces, se duplican las fijadas.
+
+Los iconos de las pestañas importadas aparecen cuando abres cada una por primera vez.
+
+## Probarla (temporal)
+
+1. Abre `about:debugging#/runtime/this-firefox`.
+2. Pulsa *Cargar complemento temporal…* y elige `manifest.json` de esta carpeta.
+
+La extensión se queda cargada hasta que cierres Firefox. Para ver los cambios después de editar el código, pulsa *Recargar* en esa misma página.
+
+## Instalarla y actualizarla
+
+Firefox solo instala de forma permanente extensiones firmadas por Mozilla. Se firma como *unlisted*: no aparece en la tienda, y las actualizaciones se publican en este repositorio. La `update_url` del manifest apunta a [updates.json](updates.json), y Firefox lo revisa cada día e instala solo las versiones nuevas en todos tus PCs.
+
+**Una vez:** en https://addons.mozilla.org/developers/ → *Tools → Manage API Keys*, genera unas claves y guárdalas en tu shell (por ejemplo, en `~/.zshrc`):
+
+```bash
+export WEB_EXT_API_KEY=...
+export WEB_EXT_API_SECRET=...
+```
+
+**Cada versión nueva** (con los cambios ya commiteados):
+
+```bash
+./tools/release.sh          # 0.1.0 → 0.1.1; usa minor o major para saltos mayores
+```
+
+El script sube la versión, la firma en AMO (espera a que Mozilla la firme), crea una release en GitHub con el `.xpi` y añade la versión a `updates.json`. Para no esperar al día siguiente: `about:addons` → ⚙️ → *Buscar actualizaciones*.
+
+**Primera instalación en cada PC:** descarga el `.xpi` de la última [release](https://github.com/bverger/firefox-workspaces/releases) y arrástralo a Firefox. La 0.1.0 se subió a mano y no tiene `update_url`, así que hay que instalar la 0.1.1 a mano una vez; a partir de ahí se actualiza sola.
+
+Antes de nada, comprueba en `about:policies` que tu organización no bloquea extensiones fuera de una lista permitida (`ExtensionSettings`).
+
+Si algún día se publica en la tienda (*listed*), hay que quitar la `update_url`: AMO se encarga entonces de las actualizaciones.
+
+## Ocultar la barra de pestañas de arriba
+
+Una extensión no puede tocar la interfaz de Firefox, así que se hace con un `userChrome.css` ([userchrome/userChrome.css](userchrome/userChrome.css)): oculta la barra de pestañas y la cabecera de la barra lateral. Para instalarlo en tu perfil por defecto, con Firefox cerrado:
+
+```bash
+./userchrome/install.sh
+```
+
+El mismo CSS permite que el panel se oculte solo y aparezca al acercar el cursor al borde izquierdo, como en Arc. Se activa y desactiva con el botón de arriba a la derecha del panel (o con un atajo que puedes asignar en *Gestionar atajos de extensiones*). La preferencia se sincroniza entre PCs. El ancho del panel desplegado está en `--ws-expanded` dentro de [userchrome/autohide-sidebar.css](userchrome/autohide-sidebar.css).
+
+Una extensión no puede cambiar el CSS de Firefox, así que el botón añade una marca invisible al título del panel, y el CSS solo oculta el panel cuando ve esa marca. Sin el `userChrome.css` instalado, el botón no hace nada.
+
+El script copia el CSS en `chrome/` del perfil, junto con el que oculta la columna de iconos del panel lateral de Firefox, (guarda una copia si ya tenías uno) y añade a `user.js` dos ajustes: activar `userChrome.css` y mostrar la barra de título nativa, porque en macOS los botones de la ventana estaban en la barra de pestañas. Para deshacerlo, borra `chrome/userChrome.css` y esas dos líneas de `user.js`.
+
+No actives a la vez las pestañas verticales nativas de Firefox, o tendrás dos listas de pestañas.
+
+## Usarla en varios ordenadores
+
+Inicia sesión con la misma cuenta de Firefox en todos los PCs y deja activado *Complementos* en *Ajustes → Sincronización*.
+
+| Qué | ¿Se sincroniza? |
+|---|---|
+| Workspaces: nombres, colores, orden | Sí, lo hace la extensión con `storage.sync` |
+| Favoritos, fijadas y carpetas de cada workspace | Sí, lo hace la extensión |
+| Tiempo de archivado | Sí |
+| Pestañas archivadas | No, son de cada PC |
+| Marcadores, historial, contraseñas, ajustes | Sí, lo hace Firefox Sync |
+| Pestañas abiertas en cada workspace | No: cada PC tiene las suyas. Las de los otros dispositivos se ven en Firefox View |
+| La propia extensión | Se instala a mano una vez en cada PC; después se actualiza sola desde este repositorio |
+| `userChrome.css` | No: ejecuta `userchrome/install.sh` en cada PC |
+
+Firefox Sync tarda unos minutos en propagar los cambios. Si editas el mismo workspace en dos PCs a la vez, se queda la última versión. Cada workspace admite unos 30–40 favoritos, y cada carpeta unos 30–40 elementos (límite de 8 KB por elemento de `storage.sync`, 100 KB en total).
+
+## Notas
+
+- La primera vez que la extensión oculta pestañas, Firefox muestra un aviso. Es normal. Si desactivas la extensión, todas las pestañas vuelven a verse.
+- Los atajos se cambian en `about:addons` → ⚙️ → *Gestionar atajos de extensiones*. *Workspace siguiente/anterior* no tienen atajo por defecto. Si en macOS tienes activado `Ctrl+número` para cambiar de escritorio (Mission Control), cambia uno de los dos.
+- Las pestañas ocultas siguen cargadas en memoria. Firefox las descarga solo si le falta memoria.
+- Al instalar la extensión, las pestañas que ya tenías abiertas van al workspace *Personal*.

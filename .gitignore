@@ -1,0 +1,7 @@
+# Personal data exported from Arc (private URLs)
+arc-import.json
+# Build and signing output
+web-ext-artifacts/
+dist/
+.amo-upload-uuid
+.DS_Store

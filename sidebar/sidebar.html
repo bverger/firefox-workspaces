@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <title>Workspaces</title>
+  <link rel="stylesheet" href="sidebar.css">
+</head>
+<body>
+  <header>
+    <nav id="spaces"></nav>
+    <button id="autohide" aria-pressed="false">
+      <svg viewBox="0 0 16 16" aria-hidden="true">
+        <rect x="1.5" y="2.5" width="13" height="11" rx="2" fill="none" stroke="currentColor"/>
+        <path d="M5.5 2.5v11" stroke="currentColor"/>
+        <path class="arrow" d="M10.5 6 8.5 8l2 2" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+  </header>
+
+  <div id="editor" hidden>
+    <div class="editor-row">
+      <input id="ws-emoji" maxlength="8" placeholder="🙂" title="Emoji (opcional)">
+      <input id="ws-name" maxlength="30" placeholder="Nombre del workspace">
+    </div>
+    <div id="ws-colors"></div>
+    <div class="editor-actions">
+      <button id="ws-delete" class="danger">Eliminar</button>
+      <button id="ws-cancel">Cancelar</button>
+      <button id="ws-save" class="primary">Guardar</button>
+    </div>
+  </div>
+
+  <input id="search" type="search" placeholder="Buscar pestañas…" autocomplete="off">
+
+  <main id="main">
+    <section id="favs" title="Arrastra una pestaña aquí para añadirla a favoritos"></section>
+    <section id="pinned">
+      <div class="section-header">
+        <span>Fijadas</span>
+        <button id="new-folder" title="Nueva carpeta">+ Carpeta</button>
+      </div>
+      <ul id="pinned-items" class="items"></ul>
+    </section>
+    <div id="divider" class="section-header">
+      <span>Hoy</span>
+      <button id="clear-today" title="Archivar todas las pestañas de Hoy">Limpiar</button>
+    </div>
+    <ul id="tabs"></ul>
+    <button id="new-tab">+ Nueva pestaña</button>
+    <button id="archive-toggle"></button>
+    <ul id="archive" hidden></ul>
+  </main>
+
+  <footer>
+    <label>Archivar pestañas de Hoy sin usar tras
+      <select id="archive-after">
+        <option value="12">12 horas</option>
+        <option value="24">24 horas</option>
+        <option value="168">7 días</option>
+        <option value="720">30 días</option>
+        <option value="0">Nunca</option>
+      </select>
+    </label>
+    <div class="footer-row">
+      <span id="import-status"></span>
+      <button id="import" title="Importar workspaces, fijadas y carpetas desde un archivo de tools/arc-export.py">Importar…</button>
+      <input id="import-file" type="file" accept=".json,application/json" hidden>
+    </div>
+  </footer>
+
+  <script src="../core.js"></script>
+  <script src="sidebar.js"></script>
+</body>
+</html>

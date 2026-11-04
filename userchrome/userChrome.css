@@ -1,0 +1,20 @@
+/* Arc-like layout for the Workspaces extension: the sidebar is the only tab
+   list. Needs toolkit.legacyUserProfileCustomizations.stylesheets = true. */
+
+/* Hide the horizontal tab strip. */
+#TabsToolbar {
+  visibility: collapse !important;
+}
+
+/* Hide the sidebar title ("Workspaces" + close button). */
+#sidebar-header {
+  display: none !important;
+}
+
+/* Hide Firefox's sidebar launcher (the column of icons: bookmarks, history,
+   AI chat...). The Workspaces panel still opens from its toolbar button or
+   Ctrl+Shift+S. */
+#sidebar-container,
+#sidebar-launcher-splitter {
+  display: none !important;
+}

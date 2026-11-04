@@ -1,0 +1,39 @@
+/* Auto-hiding sidebar, like Arc. The sidebar box stays a thin strip on the
+   left; when the cursor reaches it, its content grows over the page (the box
+   keeps its width, so the page never reflows).
+
+   Only active while the Workspaces extension asks for it: its toggle button
+   appends a zero-width space to the sidebar title, which ends up in the
+   #sidebar-title value attribute. */
+
+#sidebar-box:has(#sidebar-title[value$="\200B"]) {
+  --ws-collapsed: 8px;
+  --ws-expanded: 300px;
+  --ws-hide-delay: 300ms; /* don't vanish the moment the cursor leaves */
+  position: relative;
+  z-index: 10 !important;
+  width: var(--ws-collapsed) !important;
+  min-width: var(--ws-collapsed) !important;
+  max-width: var(--ws-collapsed) !important;
+  overflow: visible !important;
+
+  & > .sidebar-browser-stack,
+  & #sidebar {
+    min-width: var(--ws-collapsed) !important;
+    transition: min-width 120ms ease var(--ws-hide-delay) !important;
+  }
+
+  &:hover > .sidebar-browser-stack,
+  &:hover #sidebar {
+    min-width: var(--ws-expanded) !important;
+    transition-delay: 0ms !important;
+  }
+
+  &:hover > .sidebar-browser-stack {
+    box-shadow: 0 0 18px rgba(0, 0, 0, 0.3);
+  }
+
+  & + #sidebar-splitter {
+    display: none !important;
+  }
+}

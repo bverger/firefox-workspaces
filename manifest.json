@@ -1,0 +1,49 @@
+{
+  "manifest_version": 3,
+  "name": "Workspaces",
+  "version": "0.1.0",
+  "description": "Workspaces y pestañas verticales en la barra lateral, al estilo Arc/Dia.",
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "workspaces@tomeuverger",
+      "update_url": "https://raw.githubusercontent.com/bverger/firefox-workspaces/main/updates.json",
+      "strict_min_version": "140.0",
+      "data_collection_permissions": { "required": ["none"] }
+    },
+    "gecko_android": {
+      "strict_min_version": "142.0"
+    }
+  },
+  "permissions": ["tabs", "tabHide", "sessions", "storage", "menus", "menus.overrideContext", "alarms"],
+  "background": {
+    "scripts": ["core.js", "background.js"]
+  },
+  "icons": {
+    "48": "icons/icon.svg",
+    "96": "icons/icon.svg"
+  },
+  "action": {
+    "default_title": "Workspaces",
+    "default_icon": "icons/icon.svg"
+  },
+  "sidebar_action": {
+    "default_title": "Workspaces",
+    "default_panel": "sidebar/sidebar.html",
+    "default_icon": "icons/icon.svg",
+    "open_at_install": true
+  },
+  "commands": {
+    "_execute_sidebar_action": {
+      "suggested_key": { "default": "Alt+Shift+S", "mac": "MacCtrl+Shift+S" },
+      "description": "Mostrar/ocultar la barra lateral"
+    },
+    "ws-1": { "suggested_key": { "default": "Alt+1", "mac": "MacCtrl+1" }, "description": "Ir al workspace 1" },
+    "ws-2": { "suggested_key": { "default": "Alt+2", "mac": "MacCtrl+2" }, "description": "Ir al workspace 2" },
+    "ws-3": { "suggested_key": { "default": "Alt+3", "mac": "MacCtrl+3" }, "description": "Ir al workspace 3" },
+    "ws-4": { "suggested_key": { "default": "Alt+4", "mac": "MacCtrl+4" }, "description": "Ir al workspace 4" },
+    "ws-5": { "suggested_key": { "default": "Alt+5", "mac": "MacCtrl+5" }, "description": "Ir al workspace 5" },
+    "ws-next": { "description": "Workspace siguiente" },
+    "ws-prev": { "description": "Workspace anterior" },
+    "toggle-autohide": { "description": "Activar/desactivar la ocultación automática del panel" }
+  }
+}
