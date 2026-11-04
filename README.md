@@ -38,28 +38,26 @@ La extensión se queda cargada hasta que cierres Firefox. Para ver los cambios d
 
 ## Instalarla y actualizarla
 
-Firefox solo instala de forma permanente extensiones firmadas por Mozilla. Se firma como *unlisted*: no aparece en la tienda, y las actualizaciones se publican en este repositorio. La `update_url` del manifest apunta a [updates.json](updates.json), y Firefox lo revisa cada día e instala solo las versiones nuevas en todos tus PCs.
+La extensión se publica en addons.mozilla.org (*listed*). Se instala desde su página de la tienda y Firefox la actualiza solo. En cada PC con tu cuenta de Firefox (y *Complementos* activado en la sincronización), Firefox Sync la instala sin hacer nada.
 
-**Una vez:** en https://addons.mozilla.org/developers/ → *Tools → Manage API Keys*, genera unas claves y guárdalas en tu shell (por ejemplo, en `~/.zshrc`):
+**Publicar una versión nueva.** Una vez, en https://addons.mozilla.org/developers/ → *Tools → Manage API Keys*, genera unas claves y guárdalas en tu shell (por ejemplo, en `~/.zshrc`):
 
 ```bash
 export WEB_EXT_API_KEY=...
 export WEB_EXT_API_SECRET=...
 ```
 
-**Cada versión nueva** (con los cambios ya commiteados):
+Después, con los cambios ya commiteados:
 
 ```bash
-./tools/release.sh          # 0.1.0 → 0.1.1; usa minor o major para saltos mayores
+./tools/release.sh          # sube la versión (patch; usa minor o major para saltos mayores)
 ```
 
-El script sube la versión, la firma en AMO (espera a que Mozilla la firme), crea una release en GitHub con el `.xpi` y añade la versión a `updates.json`. Para no esperar al día siguiente: `about:addons` → ⚙️ → *Buscar actualizaciones*.
+El script sube la versión en `manifest.json`, la envía a revisión en AMO, hace commit, crea la etiqueta `vX.Y.Z` y lo sube a GitHub. Cuando Mozilla la aprueba, Firefox la instala en tus PCs en menos de un día; para no esperar: `about:addons` → ⚙️ → *Buscar actualizaciones*.
 
-**Primera instalación en cada PC:** descarga el `.xpi` de la última [release](https://github.com/bverger/firefox-workspaces/releases) y arrástralo a Firefox. La 0.1.0 se subió a mano y no tiene `update_url`, así que hay que instalar la 0.1.1 a mano una vez; a partir de ahí se actualiza sola.
+Los textos de la ficha de la tienda están en [store/amo-listing.md](store/amo-listing.md).
 
-Antes de nada, comprueba en `about:policies` que tu organización no bloquea extensiones fuera de una lista permitida (`ExtensionSettings`).
-
-Si algún día se publica en la tienda (*listed*), hay que quitar la `update_url`: AMO se encarga entonces de las actualizaciones.
+Antes de instalarla en un ordenador de empresa, comprueba en `about:policies` que la organización no bloquea extensiones fuera de una lista permitida (`ExtensionSettings`).
 
 ## Ocultar la barra de pestañas de arriba
 
@@ -89,7 +87,7 @@ Inicia sesión con la misma cuenta de Firefox en todos los PCs y deja activado *
 | Pestañas archivadas | No, son de cada PC |
 | Marcadores, historial, contraseñas, ajustes | Sí, lo hace Firefox Sync |
 | Pestañas abiertas en cada workspace | No: cada PC tiene las suyas. Las de los otros dispositivos se ven en Firefox View |
-| La propia extensión | Se instala a mano una vez en cada PC; después se actualiza sola desde este repositorio |
+| La propia extensión | Sí: Firefox Sync la instala en tus otros PCs y AMO la mantiene actualizada |
 | `userChrome.css` | No: ejecuta `userchrome/install.sh` en cada PC |
 
 Firefox Sync tarda unos minutos en propagar los cambios. Si editas el mismo workspace en dos PCs a la vez, se queda la última versión. Cada workspace admite unos 30–40 favoritos, y cada carpeta unos 30–40 elementos (límite de 8 KB por elemento de `storage.sync`, 100 KB en total).
