@@ -476,8 +476,25 @@ const WS = (() => {
       }
       summary.push({ name: ws.name, tabs, folders: folderCount, favorites: favorites.length });
     }
+    // Synced, so the import button disappears on every computer.
+    await browser.storage.sync.set({ importedAt: Date.now() });
     notify();
     return summary;
+  }
+
+  async function hasImported() {
+    const { importedAt } = await browser.storage.sync.get('importedAt');
+    return Boolean(importedAt);
+  }
+
+  // Versions before the importedAt flag: treat any saved pinned/folder item
+  // as a sign the import was already done.
+  async function markImportedIfPinned() {
+    if (await hasImported()) return;
+    const { folders } = await readSync();
+    if (Object.values(folders).some((f) => f.items.length)) {
+      await browser.storage.sync.set({ importedAt: Date.now() });
+    }
   }
 
   // --- Favicon cache --------------------------------------------------------
@@ -633,7 +650,7 @@ const WS = (() => {
     newTab, switchTo, switchBy, moveTab,
     addFavorite, removeFavorite, toggleFavorite, openFavorite,
     createFolder, renameFolder, deleteFolder, moveFolder, addToFolder, removeItem, moveItem, openItem, unpinItem,
-    updateItemIcon, pinTab, pinItem, savedSets, isSaved, isFolderRef, workspaceFolders, migrateFolders, importData,
+    updateItemIcon, pinTab, pinItem, savedSets, isSaved, isFolderRef, workspaceFolders, migrateFolders, importData, hasImported, markImportedIfPinned,
     DEFAULT_ARCHIVE_HOURS, getArchiveHours, clearToday, autoArchive, restoreArchived, removeArchived, clearArchive,
     getAutohide, applyAutohide, setAutohide, hostOf, cacheIcon, getIconCache,
     createWorkspace, editWorkspace, deleteWorkspace,

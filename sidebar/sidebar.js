@@ -44,12 +44,13 @@ function scheduleRender() {
 
 async function render() {
   const seq = ++renderSeq;
-  const [next, { collapsed = {}, archive = [] }, archiveHours, autohide, icons] = await Promise.all([
+  const [next, { collapsed = {}, archive = [] }, archiveHours, autohide, icons, imported] = await Promise.all([
     WS.windowState(windowId).catch(() => null),
     browser.storage.local.get(['collapsed', 'archive']),
     WS.getArchiveHours(),
     WS.getAutohide(),
     WS.getIconCache(),
+    WS.hasImported(),
   ]);
   if (!next || seq !== renderSeq) return;
   // While a switch is still running, keep showing its target workspace.
@@ -57,6 +58,7 @@ async function render() {
   paint();
   $('#archive-after').value = String(archiveHours);
   renderAutohide(autohide);
+  $('#import').hidden = imported; // only needed once
 }
 
 // Draws everything from `state`, without reading anything.
@@ -620,7 +622,10 @@ $('#search').onkeydown = (e) => {
   if (e.key === 'Enter') $('#tabs .tab')?.click();
 };
 
-$('#new-tab').onclick = () => act(WS.newTab(windowId, state.activeId));
+// Opens the Arc-style command bar; a blank tab if the popup can't open.
+$('#new-tab').onclick = () => {
+  browser.action.openPopup({ windowId }).catch(() => act(WS.newTab(windowId, state.activeId)));
+};
 
 $('#new-folder').onclick = async () => {
   renamingFolder = await WS.createFolder(state.activeId);

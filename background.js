@@ -19,8 +19,9 @@ async function syncAllWindows() {
   }
 }
 
-browser.runtime.onInstalled.addListener(async () => {
+browser.runtime.onInstalled.addListener(async ({ reason }) => {
   await WS.migrateFolders();
+  if (reason === 'update') await WS.markImportedIfPinned();
   cacheOpenIcons();
   buildMenus();
   scheduleArchive();
@@ -109,7 +110,6 @@ browser.commands.onCommand.addListener(async (command) => {
   if (target) await WS.switchTo(win.id, target.id);
 });
 
-browser.action.onClicked.addListener(() => browser.sidebarAction.toggle());
 
 // Tab context menu, shown on the native tabs and on the sidebar's tabs.
 let menusReady = Promise.resolve();

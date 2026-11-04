@@ -20,6 +20,7 @@ Workspaces turns the sidebar into your tab list, organised the way modern sideba
 - **Favorites**: an icon grid at the top of each workspace.
 - **Pinned tabs and nested folders**: saved tabs that stay when you close them. Click to reopen.
 - **Today**: everything else. Tabs you haven't used for 12 hours (configurable, or never) are archived and can be reopened from the Archive.
+- **Command bar** for new tabs (Ctrl+T on Mac / Alt+T): open tabs, bookmarks and history suggestions, or search with your default engine.
 - **Search** across all workspaces, drag & drop to reorder, move tabs between workspaces and folders.
 - **Sync**: workspaces, favorites, pinned tabs and folders sync through your Firefox account (Settings → Sync → Add-ons).
 
@@ -35,6 +36,7 @@ Workspaces convierte la barra lateral en tu lista de pestañas:
 - **Favoritos**: cuadrícula de iconos arriba de cada workspace.
 - **Fijadas y carpetas anidadas**: pestañas guardadas que se quedan aunque las cierres. Un clic las vuelve a abrir.
 - **Hoy**: el resto. Las pestañas que no usas en 12 horas (configurable, o nunca) se archivan y se pueden recuperar desde *Archivadas*.
+- **Barra de comandos** para abrir pestañas (Ctrl+T en Mac / Alt+T): sugerencias de pestañas abiertas, marcadores e historial, o búsqueda con tu buscador.
 - **Buscador** en todos los workspaces, arrastrar y soltar para ordenar y mover pestañas entre workspaces y carpetas.
 - **Sincronización**: workspaces, favoritos, fijadas y carpetas se sincronizan con tu cuenta de Firefox (Ajustes → Sincronización → Complementos).
 
@@ -69,5 +71,6 @@ No build step: the uploaded files are the source. Permissions:
 - `storage`: workspaces, favorites and folders (storage.sync) and per-device state (storage.local).
 - `menus`, `menus.overrideContext`: "Move to workspace / folder" items and the native tab context menu on sidebar items.
 - `alarms`: periodic auto-archive of unused Today tabs.
+- `history`, `bookmarks`, `search`: suggestions in the new-tab command bar (popup) and searching with the default engine. Nothing leaves the browser.
 
 No remote code, no network requests, no data collection.

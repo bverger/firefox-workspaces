@@ -15,6 +15,7 @@ La barra lateral se organiza como en Arc, de arriba abajo:
 - **Hoy**: pestañas temporales. Las que llevan un tiempo sin usarse se cierran solas y pasan a *Archivadas*. El tiempo se elige abajo del todo: 12 horas (por defecto, como Arc), 24 horas, 7 días, 30 días o nunca. *Limpiar* archiva ya todas las de Hoy del workspace. No se archivan la pestaña seleccionada ni las que están reproduciendo sonido. Si arrastras una fijada aquí, vuelve a ser temporal.
 - **Archivadas**: las últimas 100 pestañas archivadas. Haz clic en una para volver a abrirla. Este archivo es de cada PC y no se sincroniza.
 
+- **Nueva pestaña**, como en Arc: *+ Nueva pestaña* en el panel, el icono de la extensión o `Ctrl+T` en Mac (`Alt+T` en Windows/Linux) abren una barra con un solo campo. Sugiere pestañas abiertas, marcadores e historial; Enter abre la URL o busca con tu buscador predeterminado, y con el campo vacío abre una pestaña en blanco. Firefox no deja que una extensión use `Cmd+T`; puedes probar a asignarle otro atajo en *Gestionar atajos de extensiones*.
 - **Buscador**: filtra las pestañas de todos los workspaces. Las de otros workspaces aparecen con un punto de color; al hacer clic en una, cambias a su workspace. Enter abre el primer resultado y Esc limpia la búsqueda.
 - **Gestión de pestañas**: arrastra para reordenar, suelta una pestaña sobre un workspace para moverla, clic central para cerrarla y clic derecho para abrir el menú nativo de la pestaña (incluye *Mover a workspace*).
 - **Editar un workspace**: doble clic o clic derecho sobre él para cambiar nombre y color, o para eliminarlo. Si lo eliminas, sus pestañas pasan al primer workspace.
@@ -25,7 +26,7 @@ La barra lateral se organiza como en Arc, de arriba abajo:
 python3 tools/arc-export.py
 ```
 
-Lee `~/Library/Application Support/Arc/StorableSidebar.json` y crea `arc-import.json` con tus espacios, pestañas fijadas, carpetas y subcarpetas (no las pestañas de Hoy). Después, en la barra lateral, pulsa *Importar…* abajo del todo y elige ese archivo. Cada espacio de Arc se une al workspace del mismo nombre, o se crea uno nuevo, con su emoji y su color. Si importas dos veces, se duplican las fijadas.
+Lee `~/Library/Application Support/Arc/StorableSidebar.json` y crea `arc-import.json` con tus espacios, pestañas fijadas, carpetas y subcarpetas (no las pestañas de Hoy). Después, en la barra lateral, pulsa *Importar…* abajo del todo y elige ese archivo. Cada espacio de Arc se une al workspace del mismo nombre, o se crea uno nuevo, con su emoji y su color. Después de importar, el botón desaparece en todos tus PCs (la marca se sincroniza), así que no se puede importar dos veces por error.
 
 Los iconos de las pestañas importadas aparecen cuando abres cada una por primera vez.
 
