@@ -41,20 +41,19 @@ La extensión se queda cargada hasta que cierres Firefox. Para ver los cambios d
 
 La extensión se publica en addons.mozilla.org (*listed*). Se instala desde su página de la tienda y Firefox la actualiza solo. En cada PC con tu cuenta de Firefox (y *Complementos* activado en la sincronización), Firefox Sync la instala sin hacer nada.
 
-**Publicar una versión nueva.** La publica GitHub Actions ([.github/workflows/publish.yml](.github/workflows/publish.yml)) cuando se sube una etiqueta `vX.Y.Z`. Una vez, guarda las claves de AMO (*Tools → Manage API Keys*) como *secrets* del repositorio:
+**Publicar una versión nueva.** No hay que hacer nada: cada push a `main` que cambie archivos de la extensión (`manifest.json`, `*.js`, `sidebar/`, `popup/`, `icons/`) lo publica GitHub Actions ([.github/workflows/publish.yml](.github/workflows/publish.yml)). El workflow sube la versión (patch) a partir de la última etiqueta `vX.Y.Z`, la pasa por el lint, la envía a revisión en AMO y después hace commit del nuevo número en `main` y crea la etiqueta. Cuando Mozilla la aprueba, Firefox la instala en tus PCs en menos de un día; para no esperar: `about:addons` → ⚙️ → *Buscar actualizaciones*.
 
-```bash
-gh secret set WEB_EXT_API_KEY --repo bverger/firefox-workspaces
-gh secret set WEB_EXT_API_SECRET --repo bverger/firefox-workspaces
-```
+- Cambios en el README, `tools/`, `store/` o `userchrome/` no publican nada.
+- Para no publicar un commit concreto, pon `[no release]` en su mensaje.
+- Para un salto de versión mayor (por ejemplo 0.2.0), cambia el número en `manifest.json`; el workflow usa el del manifest si es mayor que la última etiqueta.
+- Las claves de AMO (*Tools → Manage API Keys*) están guardadas como *secrets* del repositorio (`WEB_EXT_API_KEY`, `WEB_EXT_API_SECRET`). Para cambiarlas:
 
-(cada comando te pide el valor y lo guarda cifrado en GitHub). Después, con los cambios ya commiteados:
+  ```bash
+  gh secret set WEB_EXT_API_KEY --repo bverger/firefox-workspaces
+  gh secret set WEB_EXT_API_SECRET --repo bverger/firefox-workspaces
+  ```
 
-```bash
-./tools/release.sh          # sube la versión (patch; usa minor o major para saltos mayores)
-```
-
-El script sube la versión en `manifest.json`, pasa el lint, hace commit, crea la etiqueta y lo sube a GitHub; el workflow comprueba que la etiqueta coincide con el manifest y envía la versión a revisión en AMO. Cuando Mozilla la aprueba, Firefox la instala en tus PCs en menos de un día; para no esperar: `about:addons` → ⚙️ → *Buscar actualizaciones*.
+Si una publicación falla, el motivo está en la pestaña *Actions* del repositorio.
 
 Los textos de la ficha de la tienda están en [store/amo-listing.md](store/amo-listing.md).
 

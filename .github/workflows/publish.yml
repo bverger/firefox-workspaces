@@ -1,32 +1,62 @@
-# Submits a version to addons.mozilla.org when a vX.Y.Z tag is pushed
-# (tools/release.sh does that). Needs the WEB_EXT_API_KEY and
-# WEB_EXT_API_SECRET repository secrets (AMO → Tools → Manage API Keys).
+# Publishes every change to the extension on addons.mozilla.org.
+#
+# On a push to main that touches the extension's files, the next version is
+# the manifest's if it's ahead of the last vX.Y.Z tag (for minor/major bumps
+# made by hand), otherwise the last tag's patch + 1. The version is submitted
+# to AMO and, once accepted for review, committed back to main and tagged.
+# A commit message containing "[no release]" skips it.
+#
+# Needs the WEB_EXT_API_KEY and WEB_EXT_API_SECRET repository secrets
+# (AMO → Tools → Manage API Keys).
 name: Publish to AMO
 
 on:
   push:
-    tags: ['v*']
+    branches: [main]
+    paths:
+      - manifest.json
+      - background.js
+      - core.js
+      - sidebar/**
+      - popup/**
+      - icons/**
 
 permissions:
-  contents: read
+  contents: write
+
+concurrency:
+  group: publish
+  cancel-in-progress: false
 
 jobs:
   publish:
+    if: ${{ !contains(github.event.head_commit.message, '[no release]') }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
           node-version: 22
 
-      - name: Check the tag matches manifest.json
+      - name: Pick the version
+        id: version
         run: |
-          version=$(node -p "require('./manifest.json').version")
-          if [ "v$version" != "$GITHUB_REF_NAME" ]; then
-            echo "Tag $GITHUB_REF_NAME doesn't match manifest version $version" >&2
-            exit 1
-          fi
+          version=$(python3 - <<'EOF'
+          import json, re, subprocess
+          parse = lambda v: tuple(map(int, v.split('.')))
+          manifest = parse(json.load(open('manifest.json'))['version'])
+          tags = subprocess.run(['git', 'tag', '--list', 'v*'], capture_output=True, text=True).stdout.split()
+          released = max((parse(t[1:]) for t in tags if re.fullmatch(r'v\d+\.\d+\.\d+', t)), default=(0, 0, 0))
+          major, minor, patch = manifest if manifest > released else (released[0], released[1], released[2] + 1)
+          print(f'{major}.{minor}.{patch}')
+          EOF
+          )
+          sed -i -E "0,/\"version\": \"[^\"]+\"/s//\"version\": \"$version\"/" manifest.json
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "Publishing $version"
 
       - name: Lint
         run: npx --yes web-ext@10.8.0 lint
@@ -37,3 +67,24 @@ jobs:
         env:
           WEB_EXT_API_KEY: ${{ secrets.WEB_EXT_API_KEY }}
           WEB_EXT_API_SECRET: ${{ secrets.WEB_EXT_API_SECRET }}
+
+      # Pushes made with GITHUB_TOKEN don't trigger workflows, so this can't loop.
+      - name: Commit and tag the version
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if ! git diff --quiet manifest.json; then
+            git commit -m "Release $VERSION [no release]" manifest.json
+          fi
+          # Someone may have pushed meanwhile: replay the bump on top, then tag
+          # the rebased commit.
+          for attempt in 1 2 3; do
+            if git pull --rebase origin main; then
+              git tag -f "v$VERSION"
+              git push origin HEAD:main && git push origin "v$VERSION" && exit 0
+            fi
+            sleep 5
+          done
+          exit 1
