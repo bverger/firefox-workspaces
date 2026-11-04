@@ -367,21 +367,50 @@ function renderArchive() {
   const { archive } = state;
   const toggle = $('#archive-toggle');
   const list = $('#archive');
-  toggle.hidden = !archive.length;
+  $('#archive-bar').hidden = !archive.length;
+  $('#archive-clear').hidden = list.hidden;
   toggle.textContent = `${list.hidden ? '▸' : '▾'} Archivadas (${archive.length})`;
   list.replaceChildren(...archive.map((a) => {
+    const remove = el('button', { className: 'close', textContent: '×', title: 'Quitar del archivo' });
+    remove.onclick = (e) => {
+      e.stopPropagation();
+      act(WS.removeArchived(a.closedAt, a.url));
+    };
     const row = el('li', { className: 'tab archived', title: `${a.title}\n${a.url}` },
       favicon(iconFor(a.url, a.icon)),
       el('span', { className: 'title', textContent: a.title || a.url }),
-      el('span', { className: 'ago', textContent: timeAgo(a.closedAt) }));
+      el('span', { className: 'ago', textContent: timeAgo(a.closedAt) }),
+      remove);
     row.onclick = () => act(WS.restoreArchived(windowId, state.activeId, a.closedAt, a.url));
     return row;
   }));
 }
 
+function resetClearArchive() {
+  const button = $('#archive-clear');
+  delete button.dataset.confirm;
+  button.textContent = 'Vaciar';
+  button.classList.remove('confirm');
+}
+
 $('#archive-toggle').onclick = () => {
   $('#archive').hidden = !$('#archive').hidden;
+  resetClearArchive();
   renderArchive();
+};
+
+// Two clicks to empty the archive: sidebars can't show confirm() dialogs.
+$('#archive-clear').onclick = (e) => {
+  const button = e.currentTarget;
+  if (!button.dataset.confirm) {
+    button.dataset.confirm = '1';
+    button.textContent = '¿Vaciar todo?';
+    button.classList.add('confirm');
+    return;
+  }
+  resetClearArchive();
+  $('#archive').hidden = true;
+  act(WS.clearArchive());
 };
 
 $('#archive-after').onchange = (e) => browser.storage.sync.set({ archiveAfterHours: Number(e.target.value) });

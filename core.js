@@ -559,9 +559,15 @@ const WS = (() => {
     }
   }
 
-  async function restoreArchived(windowId, wsId, closedAt, url) {
+  async function removeArchived(closedAt, url) {
     const { archive = [] } = await browser.storage.local.get('archive');
     await browser.storage.local.set({ archive: archive.filter((a) => !(a.closedAt === closedAt && a.url === url)) });
+  }
+
+  const clearArchive = () => browser.storage.local.set({ archive: [] });
+
+  async function restoreArchived(windowId, wsId, closedAt, url) {
+    await removeArchived(closedAt, url);
     await newTab(windowId, wsId, url);
   }
 
@@ -628,7 +634,7 @@ const WS = (() => {
     addFavorite, removeFavorite, toggleFavorite, openFavorite,
     createFolder, renameFolder, deleteFolder, moveFolder, addToFolder, removeItem, moveItem, openItem, unpinItem,
     updateItemIcon, pinTab, pinItem, savedSets, isSaved, isFolderRef, workspaceFolders, migrateFolders, importData,
-    DEFAULT_ARCHIVE_HOURS, getArchiveHours, clearToday, autoArchive, restoreArchived,
+    DEFAULT_ARCHIVE_HOURS, getArchiveHours, clearToday, autoArchive, restoreArchived, removeArchived, clearArchive,
     getAutohide, applyAutohide, setAutohide, hostOf, cacheIcon, getIconCache,
     createWorkspace, editWorkspace, deleteWorkspace,
   };

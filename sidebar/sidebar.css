@@ -255,9 +255,20 @@ body.dragging #favs:empty::after {
 .items { margin: 0; padding: 0; list-style: none; }
 .hint { padding: 6px 8px; color: var(--muted); font-size: 12px; font-style: italic; }
 
+#archive-bar { display: flex; align-items: center; gap: 4px; margin-top: 10px; }
+#archive-bar[hidden], #archive-clear[hidden] { display: none; }
+#archive-clear {
+  padding: 2px 6px;
+  border: none;
+  border-radius: 5px;
+  background: none;
+  color: var(--muted);
+  font-size: 11px;
+}
+#archive-clear:hover { background: var(--hover); color: var(--fg); }
+#archive-clear.confirm { color: #e5484d; }
 #archive-toggle {
-  width: 100%;
-  margin-top: 10px;
+  flex: 1;
   padding: 4px 8px;
   border: none;
   border-radius: 7px;
@@ -267,7 +278,7 @@ body.dragging #favs:empty::after {
   text-align: left;
 }
 #archive-toggle:hover { background: var(--hover); }
-#archive-toggle[hidden], #archive[hidden] { display: none; }
+#archive[hidden] { display: none; }
 #archive { margin: 0; padding: 0; list-style: none; }
 .tab.archived .title { color: var(--muted); }
 .tab.archived .ago { flex: none; color: var(--muted); font-size: 11px; }
