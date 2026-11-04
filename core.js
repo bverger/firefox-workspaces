@@ -480,6 +480,38 @@ const WS = (() => {
     return summary;
   }
 
+  // --- Favicon cache --------------------------------------------------------
+  // Firefox often reports favicons as data: URIs, too big for storage.sync, so
+  // each device keeps the last favicon seen per site in storage.local
+  // (`icon:<hostname>`). Saved items that aren't open show it.
+
+  const MAX_ICON_LENGTH = 20000;
+
+  function hostOf(url) {
+    try {
+      return new URL(url).hostname;
+    } catch {
+      return '';
+    }
+  }
+
+  async function cacheIcon(url, icon) {
+    const host = hostOf(url);
+    if (!host || !icon || icon.length > MAX_ICON_LENGTH || !/^(https?:|data:image\/)/.test(icon)) return;
+    const key = `icon:${host}`;
+    const { [key]: cached } = await browser.storage.local.get(key);
+    if (cached !== icon) await browser.storage.local.set({ [key]: icon });
+  }
+
+  async function getIconCache() {
+    const all = await browser.storage.local.get(null);
+    const icons = {};
+    for (const [key, value] of Object.entries(all)) {
+      if (key.startsWith('icon:')) icons[key.slice(5)] = value;
+    }
+    return icons;
+  }
+
   // --- Today and archive ------------------------------------------------------
   // Like Arc, Today tabs (open, not saved) that haven't been used for
   // `archiveAfterHours` are closed and kept in a per-device archive; saved tabs
@@ -597,7 +629,7 @@ const WS = (() => {
     createFolder, renameFolder, deleteFolder, moveFolder, addToFolder, removeItem, moveItem, openItem, unpinItem,
     updateItemIcon, pinTab, pinItem, savedSets, isSaved, isFolderRef, workspaceFolders, migrateFolders, importData,
     DEFAULT_ARCHIVE_HOURS, getArchiveHours, clearToday, autoArchive, restoreArchived,
-    getAutohide, applyAutohide, setAutohide,
+    getAutohide, applyAutohide, setAutohide, hostOf, cacheIcon, getIconCache,
     createWorkspace, editWorkspace, deleteWorkspace,
   };
 })();

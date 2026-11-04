@@ -21,6 +21,7 @@ async function syncAllWindows() {
 
 browser.runtime.onInstalled.addListener(async () => {
   await WS.migrateFolders();
+  cacheOpenIcons();
   buildMenus();
   scheduleArchive();
   WS.applyAutohide();
@@ -29,6 +30,7 @@ browser.runtime.onInstalled.addListener(async () => {
 
 browser.runtime.onStartup.addListener(() => {
   buildMenus();
+  setTimeout(cacheOpenIcons, RESTORE_GRACE_MS * 5);
   scheduleArchive();
   WS.applyAutohide();
   setTimeout(syncAllWindows, RESTORE_GRACE_MS * 1.5);
@@ -200,7 +202,13 @@ async function togglePin(tab) {
 
 // Saved items without an icon (imported, or saved before the page loaded) take
 // the favicon of their tab once it has one.
-browser.tabs.onUpdated.addListener(async (tabId, { favIconUrl }) => {
+browser.tabs.onUpdated.addListener(async (tabId, { favIconUrl }, tab) => {
+  await WS.cacheIcon(tab.url, favIconUrl);
   const item = await browser.sessions.getTabValue(tabId, 'item');
   if (item) await WS.updateItemIcon(item, favIconUrl);
 }, { properties: ['favIconUrl'] });
+
+// Seed the favicon cache with the tabs already open.
+async function cacheOpenIcons() {
+  for (const tab of await browser.tabs.query({})) await WS.cacheIcon(tab.url, tab.favIconUrl);
+}

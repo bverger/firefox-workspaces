@@ -19,6 +19,9 @@ function el(tag, props = {}, ...children) {
 
 const classes = (...names) => names.filter(Boolean).join(' ');
 
+// The first icon given, else the cached favicon of the URL's site.
+const iconFor = (url, ...icons) => icons.find(Boolean) || state?.icons?.[WS.hostOf(url)];
+
 function favicon(src) {
   const ok = src && !src.startsWith('chrome://');
   const img = el('img', { className: 'icon', src: ok ? src : DEFAULT_ICON, alt: '' });
@@ -41,15 +44,16 @@ function scheduleRender() {
 
 async function render() {
   const seq = ++renderSeq;
-  const [next, { collapsed = {}, archive = [] }, archiveHours, autohide] = await Promise.all([
+  const [next, { collapsed = {}, archive = [] }, archiveHours, autohide, icons] = await Promise.all([
     WS.windowState(windowId).catch(() => null),
     browser.storage.local.get(['collapsed', 'archive']),
     WS.getArchiveHours(),
     WS.getAutohide(),
+    WS.getIconCache(),
   ]);
   if (!next || seq !== renderSeq) return;
   // While a switch is still running, keep showing its target workspace.
-  state = { ...next, collapsed, archive, activeId: pendingSwitch ?? next.activeId };
+  state = { ...next, collapsed, archive, icons, activeId: pendingSwitch ?? next.activeId };
   paint();
   $('#archive-after').value = String(archiveHours);
   renderAutohide(autohide);
@@ -163,7 +167,7 @@ function favTile({ url, title, icon, tab, pinned, wsId }) {
   const tile = el('button', {
     className: classes('fav', tab && 'open', tab?.active && 'active', pinned && 'pinned'),
     title: pinned ? `${title} (fijada en todos los workspaces)` : title || url,
-  }, favicon(tab?.favIconUrl || icon));
+  }, favicon(iconFor(url ?? tab?.url, tab?.favIconUrl, icon)));
   tile.onclick = () => (tab ? browser.tabs.update(tab.id, { active: true }) : act(WS.openFavorite(windowId, wsId, url)));
   middleClick(tile, () => tab && browser.tabs.remove(tab.id));
   if (tab) tile.oncontextmenu = () => browser.menus.overrideContext({ context: 'tab', tabId: tab.id });
@@ -302,7 +306,7 @@ function itemRow(ws, folder, item, index, tab, removeTitle = 'Quitar de la carpe
   const row = el('li', {
     className: classes('tab', 'item', !tab && 'closed', tab?.active && 'active'),
     title: `${tab?.title || item.title}\n${tab?.url || item.url}`,
-  }, favicon(tab?.favIconUrl || item.icon), el('span', { className: 'title', textContent: tab?.title || item.title || item.url }));
+  }, favicon(iconFor(item.url, tab?.favIconUrl, item.icon)), el('span', { className: 'title', textContent: tab?.title || item.title || item.url }));
 
   if (tab) {
     const close = el('button', { className: 'close', textContent: '×', title: 'Cerrar (se queda guardada)' });
@@ -367,7 +371,7 @@ function renderArchive() {
   toggle.textContent = `${list.hidden ? '▸' : '▾'} Archivadas (${archive.length})`;
   list.replaceChildren(...archive.map((a) => {
     const row = el('li', { className: 'tab archived', title: `${a.title}\n${a.url}` },
-      favicon(a.icon),
+      favicon(iconFor(a.url, a.icon)),
       el('span', { className: 'title', textContent: a.title || a.url }),
       el('span', { className: 'ago', textContent: timeAgo(a.closedAt) }));
     row.onclick = () => act(WS.restoreArchived(windowId, state.activeId, a.closedAt, a.url));
@@ -394,7 +398,7 @@ function tabRow(tab, otherColor) {
     dot.style.setProperty('--c', otherColor);
     row.append(dot);
   }
-  row.append(favicon(tab.favIconUrl), el('span', { className: 'title', textContent: tab.title || tab.url }));
+  row.append(favicon(iconFor(tab.url, tab.favIconUrl)), el('span', { className: 'title', textContent: tab.title || tab.url }));
 
   if (tab.audible || tab.mutedInfo?.muted) {
     const muted = tab.mutedInfo?.muted;
