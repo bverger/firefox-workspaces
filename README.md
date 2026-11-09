@@ -30,12 +30,21 @@ Lee `~/Library/Application Support/Arc/StorableSidebar.json` y crea `arc-import.
 
 Los iconos de las pestañas importadas aparecen cuando abres cada una por primera vez.
 
-## Probarla (temporal)
+## Probar cambios antes de publicarlos
 
-1. Abre `about:debugging#/runtime/this-firefox`.
-2. Pulsa *Cargar complemento temporal…* y elige `manifest.json` de esta carpeta.
+```sh
+tools/dev.sh
+```
 
-La extensión se queda cargada hasta que cierres Firefox. Para ver los cambios después de editar el código, pulsa *Recargar* en esa misma página.
+Abre un Firefox de pruebas aparte, con la extensión cargada desde esta carpeta. Funciona a la vez que tu Firefox normal, y con Ctrl+C en la terminal se cierra.
+
+- **Perfil propio** (`~/.sidespace-dev/profile`), que se conserva entre ejecuciones. Importa `arc-import.json` la primera vez y ahí se queda.
+- **Sin cuenta de Firefox:** las cuentas están desactivadas en ese perfil, así que un cambio con errores nunca llega a los datos que Firefox Sync lleva a tus PCs.
+- **Recarga sola:** al guardar cualquier archivo de la extensión, se recarga. Los cambios de `userchrome/` se copian al arrancar, así que para verlos hay que volver a lanzar el script.
+
+No uses *Cargar complemento temporal* de `about:debugging` en tu Firefox normal. Tiene el mismo ID que la versión de AMO, así que la sustituye mientras está cargada y escribe en tus datos sincronizados reales.
+
+Para empezar de cero: `rm -rf ~/.sidespace-dev`.
 
 ## Instalarla y actualizarla
 
