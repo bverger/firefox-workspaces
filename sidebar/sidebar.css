@@ -203,7 +203,28 @@ body.dragging #favs:empty::after {
 }
 .folder-header:hover { background: var(--hover); }
 .folder-header.drop { box-shadow: inset 0 0 0 2px var(--accent); }
-.folder-header .chevron { width: 10px; color: var(--muted); font-size: 10px; }
+/* Chevron drawn with a mask so it takes the text colour and stays crisp at any
+   size; points right when collapsed, down when open. */
+.folder-header .chevron {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 18px;
+  height: 18px;
+  margin-right: -2px;
+  border-radius: 4px;
+  color: var(--muted);
+}
+.folder-header .chevron::before {
+  content: '';
+  width: 14px;
+  height: 14px;
+  background: currentColor;
+  mask: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><path d='M6 3.5 10.5 8 6 12.5' fill='none' stroke='black' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/></svg>") center / contain no-repeat;
+  transform: rotate(90deg);
+}
+.folder-header.collapsed .chevron::before { transform: none; }
+.folder-header:hover .chevron { color: var(--fg); background: var(--hover); }
 .folder-header .folder-icon { font-size: 13px; }
 .folder-header .title { flex: 1; overflow: hidden; white-space: nowrap; text-overflow: ellipsis; font-weight: 500; }
 .folder-header .count { color: var(--muted); font-size: 11px; }
@@ -358,7 +379,7 @@ footer select {
 #new-tab {
   width: 100%;
   height: 32px;
-  margin-top: 2px;
+  margin-bottom: 2px;
   padding: 0 8px;
   border: none;
   border-radius: 7px;

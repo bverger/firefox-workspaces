@@ -27,7 +27,8 @@ const WS = (() => {
 
   const uuid = () => crypto.randomUUID();
   const folderKey = (id) => `folder:${id}`;
-  const ARCHIVE_MAX = 100;
+  const ARCHIVE_MAX = 50;
+  const ARCHIVE_MAX_DAYS = 30;
   const DEFAULT_ARCHIVE_HOURS = 12; // Arc's default
 
   // Firefox Sync carries storage.sync to the user's other computers. Each
@@ -512,6 +513,18 @@ const WS = (() => {
     }
   }
 
+  // Last resort for sites this device hasn't seen yet: the site's own
+  // /favicon.ico, asked of the site itself (no third-party icon service).
+  // Sites without one fall back to the default icon through the img's onerror.
+  function siteIcon(url) {
+    try {
+      const { protocol, origin } = new URL(url);
+      return /^https?:$/.test(protocol) ? `${origin}/favicon.ico` : undefined;
+    } catch {
+      return undefined;
+    }
+  }
+
   async function cacheIcon(url, icon) {
     const host = hostOf(url);
     if (!host || !icon || icon.length > MAX_ICON_LENGTH || !/^(https?:|data:image\/)/.test(icon)) return;
@@ -539,15 +552,30 @@ const WS = (() => {
     return archiveAfterHours ?? DEFAULT_ARCHIVE_HOURS;
   }
 
+  // The archive keeps the newest ARCHIVE_MAX entries, none older than
+  // ARCHIVE_MAX_DAYS.
+  const pruned = (archive) => {
+    const cutoff = Date.now() - ARCHIVE_MAX_DAYS * 24 * 3600 * 1000;
+    return archive.filter((a) => a.closedAt >= cutoff).slice(0, ARCHIVE_MAX);
+  };
+
   async function archiveTabs(tabs) {
     if (!tabs.length) return;
     const now = Date.now();
     const entries = tabs.filter(canSave).map((t) => ({ ...savedEntry(t), closedAt: now }));
     if (entries.length) {
       const { archive = [] } = await browser.storage.local.get('archive');
-      await browser.storage.local.set({ archive: [...entries, ...archive].slice(0, ARCHIVE_MAX) });
+      await browser.storage.local.set({ archive: pruned([...entries, ...archive]) });
     }
     await browser.tabs.remove(tabs.map((t) => t.id));
+  }
+
+  // Runs with the auto-archive alarm, so old entries expire even when nothing
+  // new is archived (and with auto-archive set to "never").
+  async function expireArchive() {
+    const { archive = [] } = await browser.storage.local.get('archive');
+    const kept = pruned(archive);
+    if (kept.length !== archive.length) await browser.storage.local.set({ archive: kept });
   }
 
   async function todayTabs(windowId) {
@@ -563,6 +591,7 @@ const WS = (() => {
   }
 
   async function autoArchive() {
+    await expireArchive();
     const hours = await getArchiveHours();
     if (!hours) return;
     const cutoff = Date.now() - hours * 3600 * 1000;
@@ -652,7 +681,7 @@ const WS = (() => {
     createFolder, renameFolder, deleteFolder, moveFolder, addToFolder, removeItem, moveItem, openItem, unpinItem,
     updateItemIcon, pinTab, pinItem, savedSets, isSaved, isFolderRef, workspaceFolders, migrateFolders, importData, hasImported, markImportedIfPinned,
     DEFAULT_ARCHIVE_HOURS, getArchiveHours, clearToday, autoArchive, restoreArchived, removeArchived, clearArchive,
-    getAutohide, applyAutohide, setAutohide, hostOf, cacheIcon, getIconCache,
+    getAutohide, applyAutohide, setAutohide, hostOf, siteIcon, cacheIcon, getIconCache,
     createWorkspace, editWorkspace, deleteWorkspace,
   };
 })();

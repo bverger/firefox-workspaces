@@ -73,4 +73,4 @@ No build step: the uploaded files are the source. Permissions:
 - `alarms`: periodic auto-archive of unused Today tabs.
 - `history`, `bookmarks`, `search`: suggestions in the new-tab command bar (popup) and searching with the default engine. Nothing leaves the browser.
 
-No remote code, no network requests, no data collection.
+No remote code, no data collection. The only network requests are `<img>` loads of a site's own `/favicon.ico`, for saved tabs whose icon this device hasn't cached yet; no third-party services.

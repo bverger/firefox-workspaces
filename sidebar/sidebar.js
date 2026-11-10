@@ -19,8 +19,9 @@ function el(tag, props = {}, ...children) {
 
 const classes = (...names) => names.filter(Boolean).join(' ');
 
-// The first icon given, else the cached favicon of the URL's site.
-const iconFor = (url, ...icons) => icons.find(Boolean) || state?.icons?.[WS.hostOf(url)];
+// The first icon given, else the cached favicon of the URL's site, else the
+// site's /favicon.ico.
+const iconFor = (url, ...icons) => icons.find(Boolean) || state?.icons?.[WS.hostOf(url)] || WS.siteIcon(url);
 
 // Speaker icon: with sound waves, or crossed out when muted.
 function speakerIcon(muted) {
@@ -257,8 +258,8 @@ function entryNode(ws, folder, entry, index, itemTabs, removeTitle) {
 
 function folderBlock(ws, folder, index, parent, itemTabs) {
   const collapsed = Boolean(state.collapsed[folder.id]);
-  const header = el('div', { className: 'folder-header' },
-    el('span', { className: 'chevron', textContent: collapsed ? '▸' : '▾' }),
+  const header = el('div', { className: collapsed ? 'folder-header collapsed' : 'folder-header' },
+    el('span', { className: 'chevron' }),
     el('span', { className: 'folder-icon', textContent: collapsed ? '📁' : '📂' }),
   );
 

@@ -117,6 +117,10 @@ function buildMenus() {
   menusReady = menusReady.then(async () => {
     await browser.menus.removeAll();
     const workspaces = await WS.getWorkspaces();
+    // The sidebar's menu (overrideContext) only lists the extension's items,
+    // so Firefox's own "Mute Tab" isn't there.
+    browser.menus.create({ id: 'mute', title: 'Silenciar pestaña', contexts: ['tab'] });
+    browser.menus.create({ id: 'mute-sep', type: 'separator', contexts: ['tab'] });
     browser.menus.create({ id: 'move', title: 'Mover a workspace', contexts: ['tab'] });
     for (const w of workspaces) {
       browser.menus.create({ id: `move:${w.id}`, parentId: 'move', title: w.name, contexts: ['tab'] });
@@ -165,6 +169,7 @@ browser.menus.onShown.addListener(async (info, tab) => {
   const linkedFolder = item && wsFolders.find(({ folder }) => folder.items.some((i) => i.id === item))?.folder;
   const isPinned = Boolean(item && pinnedFolder?.items.some((i) => i.id === item));
   await Promise.all([
+    browser.menus.update('mute', { title: tab.mutedInfo?.muted ? 'Activar sonido' : 'Silenciar pestaña' }),
     browser.menus.update('move', { enabled: !tab.pinned }),
     browser.menus.update('pin', {
       title: isPinned ? 'Desfijar del workspace' : 'Fijar en el workspace',
@@ -184,7 +189,8 @@ browser.menus.onShown.addListener(async (info, tab) => {
 
 browser.menus.onClicked.addListener(async (info, tab) => {
   const id = String(info.menuItemId);
-  if (id === 'fav') WS.toggleFavorite(tab.id);
+  if (id === 'mute') browser.tabs.update(tab.id, { muted: !tab.mutedInfo?.muted });
+  else if (id === 'fav') WS.toggleFavorite(tab.id);
   else if (id === 'pin') await togglePin(tab);
   else if (id.startsWith('move:')) WS.moveTab(tab.id, id.slice('move:'.length));
   else if (id.startsWith('folder:')) WS.addToFolder(tab.id, id.slice('folder:'.length));
