@@ -1,7 +1,7 @@
 {
   "manifest_version": 3,
   "name": "Sidespace",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Vertical tabs in the sidebar with workspaces, pinned tabs, folders and Today tabs that archive themselves.",
   "browser_specific_settings": {
     "gecko": {
