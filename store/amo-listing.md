@@ -24,7 +24,7 @@ Sidespace turns the sidebar into your tab list, organised the way modern sidebar
 - **Search** across all workspaces, drag & drop to reorder, move tabs between workspaces and folders.
 - **Sync**: workspaces, favorites, pinned tabs and folders sync through your Firefox account (Settings → Sync → Add-ons).
 
-Optional: a userChrome.css in the project repository hides the horizontal tab bar and makes the sidebar auto-hide until the cursor reaches the screen edge (toggle button in the sidebar).
+Optional: a userChrome.css in the project repository hides the horizontal tab bar and makes the sidebar auto-hide into a strip of tab icons that opens fully when the cursor rests on it (toggle button in the sidebar).
 
 The interface is in Spanish for now.
 
@@ -40,7 +40,7 @@ Sidespace convierte la barra lateral en tu lista de pestañas:
 - **Buscador** en todos los workspaces, arrastrar y soltar para ordenar y mover pestañas entre workspaces y carpetas.
 - **Sincronización**: workspaces, favoritos, fijadas y carpetas se sincronizan con tu cuenta de Firefox (Ajustes → Sincronización → Complementos).
 
-Opcional: con el `userChrome.css` del repositorio se oculta la barra de pestañas de arriba y la barra lateral se esconde hasta que acercas el cursor al borde.
+Opcional: con el `userChrome.css` del repositorio se oculta la barra de pestañas de arriba y la barra lateral se pliega en una columna de iconos que se despliega al dejar el cursor encima.
 
 ## Categoría
 

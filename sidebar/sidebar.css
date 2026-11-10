@@ -409,3 +409,34 @@ footer select {
   text-align: left;
 }
 .menu button:hover { background: var(--hover); }
+
+/* --- Icon rail ---------------------------------------------------------------
+   Auto-hide's closed state: userChrome shows only the left --rail px of the
+   panel, so everything but the icons steps aside. */
+body.rail { --rail: 48px; }
+body.rail header,
+body.rail #search,
+body.rail #editor,
+body.rail footer,
+body.rail #archive-bar,
+body.rail #archive,
+body.rail .hint { display: none !important; }
+body.rail main { width: var(--rail); padding: 6px 6px 12px; scrollbar-width: none; }
+
+body.rail #favs { grid-template-columns: 1fr; gap: 4px; }
+body.rail .fav { height: 36px; }
+body.rail .unfav { display: none !important; }
+
+body.rail .section-header { margin: 6px 2px; }
+body.rail .section-header span,
+body.rail .section-header button { display: none; }
+
+body.rail .folder-header { justify-content: center; padding: 0; }
+body.rail .folder-header > :not(.folder-icon) { display: none; }
+body.rail .folder-items { padding-left: 0; }
+
+body.rail .tab { justify-content: center; padding: 0; }
+body.rail .tab > :not(.icon) { display: none; }
+
+body.rail #new-tab { padding: 0; font-size: 0; text-align: center; }
+body.rail #new-tab::before { content: "+"; font-size: 18px; }

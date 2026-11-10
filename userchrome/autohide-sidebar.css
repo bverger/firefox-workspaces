@@ -1,20 +1,19 @@
-/* Auto-hiding sidebar, like Arc. The sidebar box stays a thin strip on the
-   left; when the cursor reaches it, the panel slides in over the page (the box
-   keeps its width, so the page never reflows).
+/* Auto-hiding sidebar, like Arc. Closed, the panel is a strip of tab icons on
+   the left (drawn by the extension); resting the cursor on it opens the whole
+   panel over the page. The box keeps the strip's width, so the page never
+   reflows.
 
-   The panel always keeps its full width and only moves (transform), so the
-   slide is composited: animating its width instead re-lays out the sidebar on
-   every frame and stutters.
+   The extension drives it through the sidebar title, which ends up in the
+   #sidebar-title value attribute: a zero-width space (U+200B) means auto-hide
+   is on, and a zero-width non-joiner (U+200C) after it means this window's
+   panel is open.
 
-   Only active while the Workspaces extension asks for it: its toggle button
-   appends a zero-width space to the sidebar title, which ends up in the
-   #sidebar-title value attribute. */
+   The panel always keeps its full width and is only clipped, so opening and
+   closing never re-lay it out. */
 
-#sidebar-box:has(#sidebar-title[value$="\200B"]) {
-  --ws-collapsed: 18px; /* wide enough to reach just inside macOS's resize edge */
+#sidebar-box:has(#sidebar-title[value*="\200B"]) {
+  --ws-collapsed: 48px; /* the icon strip; matches --rail in sidebar.css */
   --ws-expanded: 300px;
-  --ws-hide-delay: 100ms; /* don't vanish if the cursor leaves for an instant */
-  --ws-ease: cubic-bezier(0.2, 0.8, 0.2, 1);
   position: relative;
   z-index: 10 !important;
   width: var(--ws-collapsed) !important;
@@ -29,24 +28,25 @@
     max-width: var(--ws-expanded) !important;
   }
 
-  /* Collapsed: pushed left until only its last --ws-collapsed px show.
-     Closing is quicker than opening and accelerates out. */
+  /* Closed: only the strip shows (clip-path also stops the hidden part from
+     taking clicks meant for the page). */
   & > .sidebar-browser-stack {
-    transform: translateX(calc(var(--ws-collapsed) - var(--ws-expanded)));
+    clip-path: inset(0 calc(var(--ws-expanded) - var(--ws-collapsed)) 0 0);
     transition:
-      transform 110ms cubic-bezier(0.4, 0, 1, 1) var(--ws-hide-delay),
-      box-shadow 110ms ease var(--ws-hide-delay);
-  }
-
-  &:hover > .sidebar-browser-stack {
-    transform: none;
-    box-shadow: 0 0 18px rgba(0, 0, 0, 0.3);
-    transition:
-      transform 160ms var(--ws-ease),
-      box-shadow 160ms ease;
+      clip-path 110ms cubic-bezier(0.4, 0, 1, 1),
+      box-shadow 110ms ease;
   }
 
   & + #sidebar-splitter {
     display: none !important;
   }
+}
+
+/* Open: the whole panel, with room on the right for its shadow. */
+#sidebar-box:has(#sidebar-title[value$="\200C"]) > .sidebar-browser-stack {
+  clip-path: inset(0 -30px 0 0);
+  box-shadow: 0 0 18px rgba(0, 0, 0, 0.3);
+  transition:
+    clip-path 160ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    box-shadow 160ms ease;
 }

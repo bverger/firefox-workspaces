@@ -76,9 +76,9 @@ Una extensión no puede tocar la interfaz de Firefox, así que se hace con un `u
 ./userchrome/install.sh
 ```
 
-El mismo CSS permite que el panel se oculte solo y aparezca al acercar el cursor al borde izquierdo, como en Arc. Se activa y desactiva con el botón de arriba a la derecha del panel (o con un atajo que puedes asignar en *Gestionar atajos de extensiones*). La preferencia se sincroniza entre PCs. El ancho del panel desplegado está en `--ws-expanded` dentro de [userchrome/autohide-sidebar.css](userchrome/autohide-sidebar.css).
+El mismo CSS permite que el panel se oculte solo, como en Arc. Plegado, queda una columna de 48px con los iconos de favoritos, fijadas y pestañas de Hoy, que se pueden pulsar para cambiar de pestaña. Si dejas el cursor quieto encima un momento, se despliega el panel entero sobre la página; al sacarlo, se pliega. Se activa y desactiva con el botón de arriba a la derecha del panel (o con un atajo que puedes asignar en *Gestionar atajos de extensiones*). La preferencia se sincroniza entre PCs. El ancho del panel desplegado está en `--ws-expanded` dentro de [userchrome/autohide-sidebar.css](userchrome/autohide-sidebar.css).
 
-Una extensión no puede cambiar el CSS de Firefox, así que el botón añade una marca invisible al título del panel, y el CSS solo oculta el panel cuando ve esa marca. Sin el `userChrome.css` instalado, el botón no hace nada.
+Una extensión no puede cambiar el CSS de Firefox, así que la extensión añade marcas invisibles al título del panel de cada ventana (una para "auto-ocultar activado" y otra para "desplegado"), y el CSS pliega o despliega el panel según las vea. El CSS y la extensión van de la mano: al actualizar a una versión que cambie estas marcas, hay que volver a instalar el `userChrome.css`. Sin el `userChrome.css` instalado, el botón no hace nada.
 
 El script copia el CSS en `chrome/` del perfil, junto con el que oculta la columna de iconos del panel lateral de Firefox, (guarda una copia si ya tenías uno) y añade a `user.js` dos ajustes: activar `userChrome.css` y mostrar la barra de título nativa, porque en macOS los botones de la ventana estaban en la barra de pestañas. Para deshacerlo, borra `chrome/userChrome.css` y esas dos líneas de `user.js`.
 

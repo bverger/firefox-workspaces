@@ -632,6 +632,12 @@ const WS = (() => {
     const name = browser.runtime.getManifest().name;
     await browser.sidebarAction.setTitle({ title: (await getAutohide()) ? name + AUTOHIDE_MARK : name });
   }
+  // With auto-hide on, each window's sidebar says whether it is open wide
+  // (EXPANDED_MARK after AUTOHIDE_MARK) and userChrome shows it accordingly.
+  const EXPANDED_MARK = '\u200C';
+  function autohideTitle(expanded) {
+    return browser.runtime.getManifest().name + AUTOHIDE_MARK + (expanded ? EXPANDED_MARK : '');
+  }
 
   async function setAutohide(on) {
     await browser.storage.sync.set({ autohide: on });
@@ -681,7 +687,7 @@ const WS = (() => {
     createFolder, renameFolder, deleteFolder, moveFolder, addToFolder, removeItem, moveItem, openItem, unpinItem,
     updateItemIcon, pinTab, pinItem, savedSets, isSaved, isFolderRef, workspaceFolders, migrateFolders, importData, hasImported, markImportedIfPinned,
     DEFAULT_ARCHIVE_HOURS, getArchiveHours, clearToday, autoArchive, restoreArchived, removeArchived, clearArchive,
-    getAutohide, applyAutohide, setAutohide, hostOf, siteIcon, cacheIcon, getIconCache,
+    getAutohide, applyAutohide, setAutohide, autohideTitle, hostOf, siteIcon, cacheIcon, getIconCache,
     createWorkspace, editWorkspace, deleteWorkspace,
   };
 })();

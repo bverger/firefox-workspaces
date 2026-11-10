@@ -112,7 +112,55 @@ function paint() {
   renderArchive();
 }
 
+// --- Icon rail (auto-hide) ------------------------------------------------
+// With auto-hide on, the closed panel is a strip of tab icons that can be
+// clicked. Resting the cursor on it for a moment opens the whole panel;
+// leaving the panel closes it. userChrome draws both states from the title.
+const RAIL_REST_MS = 250;
+const RAIL_HIDE_MS = 100;
+const RAIL_CLOSE_ANIMATION_MS = 120;
+let autohideOn = false;
+let expanded = false;
+let restTimer;
+let hideTimer;
+
+function setExpanded(on) {
+  clearTimeout(restTimer);
+  clearTimeout(hideTimer);
+  if (expanded === on) return;
+  expanded = on;
+  // Wide layout before the panel opens; icon layout once it has closed.
+  if (on) document.body.classList.remove('rail');
+  else setTimeout(() => !expanded && autohideOn && document.body.classList.add('rail'), RAIL_CLOSE_ANIMATION_MS);
+  browser.sidebarAction.setTitle({ windowId, title: WS.autohideTitle(on) }).catch(console.error);
+}
+
+function applyRail(on) {
+  if (on === autohideOn) return;
+  autohideOn = on;
+  expanded = false;
+  document.body.classList.toggle('rail', on);
+  // null drops this window's own title, back to the global one.
+  browser.sidebarAction.setTitle({ windowId, title: on ? WS.autohideTitle(false) : null }).catch(console.error);
+}
+
+document.addEventListener('mousemove', () => {
+  clearTimeout(hideTimer);
+  if (!autohideOn || expanded) return;
+  clearTimeout(restTimer);
+  restTimer = setTimeout(() => setExpanded(true), RAIL_REST_MS);
+});
+// A click on an icon is the quick way through: don't open the panel after it
+// until the cursor moves again.
+document.addEventListener('mousedown', () => clearTimeout(restTimer));
+window.addEventListener('mouseout', (e) => {
+  if (e.relatedTarget || !autohideOn) return;
+  clearTimeout(restTimer);
+  hideTimer = setTimeout(() => setExpanded(false), RAIL_HIDE_MS);
+});
+
 function renderAutohide(on) {
+  if (windowId !== undefined) applyRail(on);
   const button = $('#autohide');
   button.setAttribute('aria-pressed', String(on));
   button.title = on
