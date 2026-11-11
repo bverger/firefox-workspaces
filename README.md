@@ -76,6 +76,14 @@ Una extensión no puede tocar la interfaz de Firefox, así que se hace con un `u
 ./userchrome/install.sh
 ```
 
+En **Windows**, con Firefox cerrado, en PowerShell (lo descarga de este repositorio, no hace falta clonarlo):
+
+```powershell
+irm https://raw.githubusercontent.com/bverger/firefox-workspaces/main/userchrome/install.ps1 | iex
+```
+
+Vuelve a lanzarlo cuando una versión nueva cambie el CSS.
+
 El mismo CSS permite que el panel se oculte solo, como en Arc. Plegado, queda una columna de 48px con los iconos de favoritos, fijadas y pestañas de Hoy, que se pueden pulsar para cambiar de pestaña. Si dejas el cursor quieto encima un momento, se despliega el panel entero sobre la página; al sacarlo, se pliega. Se activa y desactiva con el botón de arriba a la derecha del panel (o con un atajo que puedes asignar en *Gestionar atajos de extensiones*). La preferencia se sincroniza entre PCs. El ancho del panel desplegado está en `--ws-expanded` dentro de [userchrome/autohide-sidebar.css](userchrome/autohide-sidebar.css).
 
 Una extensión no puede cambiar el CSS de Firefox, así que la extensión añade marcas invisibles al título del panel de cada ventana (una para "auto-ocultar activado" y otra para "desplegado"), y el CSS pliega o despliega el panel según las vea. El CSS y la extensión van de la mano: al actualizar a una versión que cambie estas marcas, hay que volver a instalar el `userChrome.css`. Sin el `userChrome.css` instalado, el botón no hace nada.
